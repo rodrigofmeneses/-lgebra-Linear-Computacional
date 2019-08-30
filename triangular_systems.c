@@ -30,49 +30,6 @@ void printVetor(const int n, const double *b)
 } 
 
 /**
- * Foward Substitution resolve sistemas com triangulares inferiores
- *
- * @param n = numero de linhas/colunas
- * @param g = ponteiro para a matriz G
- * @param b = ponteiro para o vetor b
- */
-void foward_substitution(const int n, const double *g, double *b)
-{
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < i; j++)
-            b[i] -= g[i * n + j] * b[j];
-        
-        if(g[i * n] == 0){
-            printf("Nao e possivel divisao por 0.\n");
-            return;
-        }
-        b[i] /=  g[i * n + i];
-    }
-}
-
-/**
- * Backward Substitution resolve sistemas com triangulares superiores
- * 
- * @param n = numero de linhas/colunas
- * @param g = ponteiro para a matriz G
- * @param b = ponteiro para o vetor b
- */
-void backward_substitution(const int n, const double *g, double *b)
-{
-    for(int i = n - 1; i <= 0; i--){
-        for(int j = n - 1; j <= i; j--)
-            b[i] -= g[i * n + j] * b[j];
-        
-        if(g[i * n] == 0){
-            printf("Nao e possivel divisao por 0.\n");
-            return;
-        }
-        b[i] /=  g[i * n + i];
-    }
-}
-
-
-/**
  * Aloca memória e gera uma matriz triangular inferior de dimensão n x n
  * 
  * @param n = tamanho da Matriz quadrada n x n
@@ -127,6 +84,65 @@ double* random_vetor_generator(const int n){
         b[i] = ((double)rand()) / RAND_MAX;
     
     return b;
+}
+
+/**
+ * Foward Substitution resolve sistemas com triangulares inferiores
+ *
+ * @param n = numero de linhas/colunas
+ * @param g = ponteiro para a matriz G
+ * @param b = ponteiro para o vetor b
+ */
+void foward_substitution(const int n, const double *g, double *b)
+{
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < i; j++)
+            b[i] -= g[i * n + j] * b[j];
+        
+        if(g[i * n + i] == 0){
+            printf("Nao e possivel divisao por 0.\n");
+            return;
+        }
+        b[i] /=  g[i * n + i];
+    }
+}
+
+/**
+ * Backward Substitution resolve sistemas com triangulares superiores
+ * 
+ * @param n = numero de linhas/colunas
+ * @param g = ponteiro para a matriz G
+ * @param b = ponteiro para o vetor b
+ */
+void backward_substitution(const int n, const double *g, double *b)
+{
+    for(int i = n - 1; i <= 0; i--){
+        for(int j = n - 1; j <= i; j--)
+            b[i] -= g[i * n + j] * b[j];
+        
+        if(g[i * n + i] == 0){
+            printf("Nao e possivel divisao por 0.\n");
+            return;
+        }
+        b[i] /=  g[i * n + i];
+    }
+}
+// ainda nao testado
+void column_foward_substitution(const int n, const double *g, double *b){
+    for (int j = 0; j < n; j++)
+    {
+        if (g[j * n + j] == 0)
+        {
+            printf("Nao e possivel divisao por 0.\n");
+            return;
+        }
+
+        b[j] /= g[j * n + j];
+
+        for (int i = j + 1; i < n; i++)
+            b[i] -= g[i * n + j] * b[j];
+    }
+    
 }
 
 int main(int argc, char *argv[]){
