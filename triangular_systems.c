@@ -1,6 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/**
+ * Imprime Matriz a de dimensão n x n
+ * 
+ * @param n = dimensao da Matriz quadrada
+ * @param a = ponteiro para a Matriz
+ */
 void printMatrix(const int n, const double *a)
 {
     for (int i = 0; i < n; i++){
@@ -10,6 +16,12 @@ void printMatrix(const int n, const double *a)
     }
 }
 
+/**
+ * Imprime Vetor de dimensão n
+ * 
+ * @param n = tamanho do vetor
+ * @param b = ponteiro para o vetor
+ */
 void printVetor(const int n, const double *b)
 {
     for (int i = 0; i < n; i++)
@@ -18,6 +30,8 @@ void printVetor(const int n, const double *b)
 } 
 
 /**
+ * Foward Substitution resolve sistemas com triangulares inferiores
+ * 
  * Por algum motivo o código não está conseguindo acessar as posições
  * da matriz g, apenas retornando 2. 
  *
@@ -25,7 +39,7 @@ void printVetor(const int n, const double *b)
  * @param g = ponteiro para a matriz G
  * @param b = ponteiro para o vetor b
  */
-void lower_triangular(const int n, const double *g, double *b)
+void foward_substitution(const int n, const double *g, double *b)
 {
     for(int i = 0; i < n; i++){
         for(int j = 0; j < i; j++)
@@ -40,14 +54,91 @@ void lower_triangular(const int n, const double *g, double *b)
 }
 
 /**
- * Lower triangular generator
+ * Backward Substitution resolve sistemas com triangulares superiores
+ * 
+ * Por algum motivo o código não está conseguindo acessar as posições
+ * da matriz g, apenas retornando 2. 
+ *
+ * @param n = numero de linhas/colunas
+ * @param g = ponteiro para a matriz G
+ * @param b = ponteiro para o vetor b
  */
+void backward_substitution(const int n, const double *g, double *b)
+{
+    for(int i = n - 1; i <= 0; i--){
+        for(int j = n - 1; j <= i; j--)
+            b[i] -= g[i * n + j] * b[j];
+        
+        if(g[i * n] == 0){
+            printf("Nao e possivel divisao por 0.\n");
+            return;
+        }
+        b[i] /=  g[i * n];
+    }
+}
+
+
+/**
+ * Aloca memória e gera uma matriz triangular inferior de dimensão n x n
+ * 
+ * @param n = tamanho da Matriz quadrada n x n
+ * 
+ * @return ponteiro para o bloco de memória alocado
+ */
+double* lower_triangular_generator(const int n)
+{
+    double *g = (double *)malloc(n * n * sizeof(double));
+    if (g == NULL)
+        return NULL;
+
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j <= i; ++j)
+            g[i * n + j] = ((double)rand()) / RAND_MAX;
+    
+    return g;
+}
+
+/**
+ * Aloca memória e gera uma matriz triangular superior de dimensão n x n
+ * 
+ * @param n = tamanho da Matriz quadrada n x n
+ * 
+ * @return ponteiro para o bloco de memória alocado
+ */
+double* upper_triangular_generator(const int n)
+{
+    double *g = (double *)malloc(n * n * sizeof(double));
+    if (g == NULL)
+        return NULL;
+
+    for (int i = 0; i < n; ++i)
+        for (int j = i; j < n; ++j)
+            g[i * n + j] = ((double)rand()) / RAND_MAX;
+    
+    return g;
+}
+/**
+ * Aloca memória e gera um vetor de dimensão n
+ * 
+ * @param n = tamanho do vetor
+ * 
+ * @return ponteiro para o bloco de memória alocado
+ */
+double* random_vetor_generator(const int n){
+    double *b = (double *)malloc(n * sizeof(double));
+    if (b == NULL)
+        return NULL;
+
+    for (int i = 0; i < n; i++)
+        b[i] = ((double)rand()) / RAND_MAX;
+}
+
 int main(int argc, char *argv[]){
     const int n = 4;
     const int nsamples = 3;
 
-    double *g = (double *)malloc(n * n * sizeof(double));
-    double *b = (double *)malloc(n * sizeof(double));
+    double *g = upper_triangular_generator(n);
+    double *b = random_vetor_generator(n);
 
     if (g == NULL || b == NULL)
     {
@@ -55,18 +146,13 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
 
-    // Usar valores aleatórios para 'a' e 'b'
-    for (int i = 0; i < n; ++i)
-    {
-        // A função rand() gera valores de 0 a RAND_MAX
-        // esta sendo dividido para serem valores entre 0 e 1
-        b[i] = ((double)rand()) / RAND_MAX;
-        for (int j = 0; j <= i; ++j)
-            g[i * n + j] = ((double)rand()) / RAND_MAX;
-    }
+    printf("Matrix A\n");
+    printMatrix(n, g);
 
+    printf("Vetor b\n");
+    printVetor(n, b);
 
-    // Test
+    /**
     g[0] = 2;
     g[4] = -1;
     g[5] = 2;
@@ -82,18 +168,10 @@ int main(int argc, char *argv[]){
     b[1] = 3;
     b[2] = 2;
     b[3] = 9;
+    */
 
-    printf("Matrix A\n");
-    printMatrix(n, g);
-
-    printf("Vetor b\n");
-    printVetor(n, b);
-
-    lower_triangular(n, g, b);
-
-    //printMatrix(n, g);
-    printf("\nVetor y\n");
-    printVetor(n, b);
+    foward_substitution(n, g, b);
+    backward_substitution(n, g, b);
 
     free(g);
     free(b);
