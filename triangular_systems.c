@@ -4,7 +4,7 @@
 /**
  * Imprime Matriz a de dimensão n x n
  * 
- * @param n = dimensao da Matriz quadrada
+ * @param n = tamanho da Matriz quadrada n x n
  * @param a = ponteiro para a Matriz
  */
 void printMatrix(const int n, const double *a)
@@ -31,9 +31,6 @@ void printVetor(const int n, const double *b)
 
 /**
  * Foward Substitution resolve sistemas com triangulares inferiores
- * 
- * Por algum motivo o código não está conseguindo acessar as posições
- * da matriz g, apenas retornando 2. 
  *
  * @param n = numero de linhas/colunas
  * @param g = ponteiro para a matriz G
@@ -49,16 +46,13 @@ void foward_substitution(const int n, const double *g, double *b)
             printf("Nao e possivel divisao por 0.\n");
             return;
         }
-        b[i] /=  g[i * n];
+        b[i] /=  g[i * n + i];
     }
 }
 
 /**
  * Backward Substitution resolve sistemas com triangulares superiores
  * 
- * Por algum motivo o código não está conseguindo acessar as posições
- * da matriz g, apenas retornando 2. 
- *
  * @param n = numero de linhas/colunas
  * @param g = ponteiro para a matriz G
  * @param b = ponteiro para o vetor b
@@ -73,7 +67,7 @@ void backward_substitution(const int n, const double *g, double *b)
             printf("Nao e possivel divisao por 0.\n");
             return;
         }
-        b[i] /=  g[i * n];
+        b[i] /=  g[i * n + i];
     }
 }
 
@@ -131,6 +125,8 @@ double* random_vetor_generator(const int n){
 
     for (int i = 0; i < n; i++)
         b[i] = ((double)rand()) / RAND_MAX;
+    
+    return b;
 }
 
 int main(int argc, char *argv[]){
@@ -172,6 +168,8 @@ int main(int argc, char *argv[]){
 
     foward_substitution(n, g, b);
     backward_substitution(n, g, b);
+
+    printVetor(n, b);
 
     free(g);
     free(b);
