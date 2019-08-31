@@ -1,99 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "utils.c"
 
 /**
- * Imprime Matriz a de dimensão n x n
- * 
- * @param n = tamanho da Matriz quadrada n x n
- * @param a = ponteiro para a Matriz
- */
-void printMatrix(const int n, const double *a)
-{
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++)
-            printf("%f ", a[i * n + j]);
-        printf("\n");
-    }
-}
-
-/**
- * Imprime Vetor de dimensão n
- * 
- * @param n = tamanho do vetor
- * @param b = ponteiro para o vetor
- */
-void printVetor(const int n, const double *b)
-{
-    for (int i = 0; i < n; i++)
-        printf("%f ", b[i]);
-    printf("\n");
-} 
-
-/**
- * Aloca memória e gera uma matriz triangular inferior de dimensão n x n
- * 
- * @param n = tamanho da Matriz quadrada n x n
- * 
- * @return ponteiro para o bloco de memória alocado
- */
-double* lower_triangular_generator(const int n)
-{
-    double *g = (double *)malloc(n * n * sizeof(double));
-    if (g == NULL)
-        return NULL;
-
-    for (int i = 0; i < n; ++i)
-        for (int j = 0; j <= i; ++j)
-            g[i * n + j] = ((double)rand()) / RAND_MAX;
-    
-    return g;
-}
-
-/**
- * Aloca memória e gera uma matriz triangular superior de dimensão n x n
- * 
- * @param n = tamanho da Matriz quadrada n x n
- * 
- * @return ponteiro para o bloco de memória alocado
- */
-double* upper_triangular_generator(const int n)
-{
-    double *g = (double *)malloc(n * n * sizeof(double));
-    if (g == NULL)
-        return NULL;
-
-    for (int i = 0; i < n; ++i)
-        for (int j = i; j < n; ++j)
-            g[i * n + j] = ((double)rand()) / RAND_MAX;
-    
-    return g;
-}
-/**
- * Aloca memória e gera um vetor de dimensão n
- * 
- * @param n = tamanho do vetor
- * 
- * @return ponteiro para o bloco de memória alocado
- */
-double* random_vetor_generator(const int n){
-    double *b = (double *)malloc(n * sizeof(double));
-    if (b == NULL)
-        return NULL;
-
-    for (int i = 0; i < n; i++)
-        b[i] = ((double)rand()) / RAND_MAX;
-    
-    return b;
-}
-
-/**
- * Foward Substitution resolve sistemas com triangulares inferiores
+ * Row Foward Substitution resolve sistemas com triangulares inferiores
+ * linha por linha
  *
  * @param n = numero de linhas/colunas
  * @param g = ponteiro para a matriz G
  * @param b = ponteiro para o vetor b
  */
-void foward_substitution(const int n, const double *g, double *b)
+void row_foward_substitution(const int n, const double *g, double *b)
 {
     for(int i = 0; i < n; i++){
         for(int j = 0; j < i; j++)
@@ -108,26 +25,13 @@ void foward_substitution(const int n, const double *g, double *b)
 }
 
 /**
- * Backward Substitution resolve sistemas com triangulares superiores
- * 
+ * Column Foward Substitution resolve sistemas com triangulares inferiores
+ * coluna por coluna
+ *
  * @param n = numero de linhas/colunas
  * @param g = ponteiro para a matriz G
  * @param b = ponteiro para o vetor b
  */
-void backward_substitution(const int n, const double *g, double *b)
-{
-    for(int i = n - 1; i <= 0; i--){
-        for(int j = n - 1; j <= i; j--)
-            b[i] -= g[i * n + j] * b[j];
-        
-        if(g[i * n + i] == 0){
-            printf("Nao e possivel divisao por 0.\n");
-            return;
-        }
-        b[i] /=  g[i * n + i];
-    }
-}
-// ainda nao testado
 void column_foward_substitution(const int n, const double *g, double *b){
     for (int j = 0; j < n; j++)
     {
@@ -142,15 +46,81 @@ void column_foward_substitution(const int n, const double *g, double *b){
         for (int i = j + 1; i < n; i++)
             b[i] -= g[i * n + j] * b[j];
     }
-    
+}
+
+/**
+ * Row Backward Substitution resolve sistemas com triangulares superiores
+ * linha por linha
+ * 
+ * @param n = numero de linhas/colunas
+ * @param g = ponteiro para a matriz G
+ * @param b = ponteiro para o vetor b
+ */
+void row_backward_substitution(const int n, const double *g, double *b)
+{
+    for(int i = n - 1; i >= 0; i--){
+        for(int j = n - 1; j > i; j--)
+            b[i] -= g[i * n + j] * b[j];
+        
+        if(g[i * n + i] == 0){
+            printf("Nao e possivel divisao por 0.\n");
+            return;
+        }
+        b[i] /=  g[i * n + i];
+    }
+}
+
+/**
+ * Column Backward Substitution resolve sistemas com triangulares superiores
+ * coluna por coluna
+ * 
+ * @param n = numero de linhas/colunas
+ * @param g = ponteiro para a matriz G
+ * @param b = ponteiro para o vetor b
+ */
+void column_backward_substitution(const int n, const double *g, double *b){
+    for (int j = n - 1; j >= 0; j--)
+    {
+        if (g[j * n + j] == 0)
+        {
+            printf("Nao e possivel divisao por 0.\n");
+            return;
+        }
+
+        b[j] /= g[j * n + j];
+
+        for (int i = j - 1; i >= 0; i--)
+            b[i] -= g[i * n + j] * b[j];
+    }
 }
 
 int main(int argc, char *argv[]){
     const int n = 4;
     const int nsamples = 3;
 
-    double *g = upper_triangular_generator(n);
-    double *b = random_vetor_generator(n);
+    // Instancias para teste
+
+    double g_test[16] = { 2, 0, 0, 0,
+                          -1, 2, 0, 0,
+                          3, 1, -1, 0,
+                          4, 1, -3, 3 };
+
+    double g_test_transpose[16] = { 2, -1, 3, 4,
+                                    0, 2, 1, 1, 
+                                    0, 0, -1, -3,
+                                    0, 0, 0, 3 };
+
+    double b_test[4] = {2, 3, 2, 9};
+
+
+    // Ponteiros para instancias de testes ou valores aleatórios
+
+    double *g = g_test;
+    // double *g = g_test_transpose; 
+    double *b = b_test;
+
+    // double *g = lower_triangular_generator(n);
+    // double *b = random_vetor_generator(n);
 
     if (g == NULL || b == NULL)
     {
@@ -161,34 +131,22 @@ int main(int argc, char *argv[]){
     printf("Matrix A\n");
     printMatrix(n, g);
 
-    printf("Vetor b\n");
+    printf("\nVetor b - Original\n");
     printVetor(n, b);
 
-    /**
-    g[0] = 2;
-    g[4] = -1;
-    g[5] = 2;
-    g[8] = 3;
-    g[9] = 1;
-    g[10] = -1;
-    g[12] = 4;
-    g[13] = 1;
-    g[14] = -3;
-    g[15] = 3;
-
-    b[0] = 2;
-    b[1] = 3;
-    b[2] = 2;
-    b[3] = 9;
-    */
 
     foward_substitution(n, g, b);
-    backward_substitution(n, g, b);
+    // column_foward_substitution(n, g, b);
 
+    // backward_substitution(n, g, b);
+    // column_backward_substitution(n, g, b);
+
+    printf("\nVetor b = Resultado\n");
     printVetor(n, b);
 
-    free(g);
-    free(b);
+    // Apenas necessário g e b alocam memória (instancias aleatórias)
+    // free(g);
+    // free(b);
 
     return EXIT_SUCCESS;
 }
