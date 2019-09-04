@@ -3,7 +3,10 @@
 #include "utils.c"
 
 /**
- * Seja A uma matriz definida positiva.  
+ * Seja A uma matriz simétrica e definida positiva  
+ * (Matriz em que para qualquer valor de xi  nesse sistema:
+ * x * A * x^transposto = b, bi será maior 0) 
+ * 
  * Então A pode ser decomposta de maneira única no produto:
  * A = R(traspose) * R
  * sendo R é uma matriz triangular Superior 
@@ -23,6 +26,8 @@
 /**
  * @param n = tamanho da Matriz quadrada n x n
  * @param a = ponteiro para a Matriz
+ * 
+ * @info Assume-se que a matriz informada é simétrica, e definida positiva.
  * 
  * @info A matriz R sobreescreverá A e será zerado a parte inferior
  * para que R seja triangular superior.
